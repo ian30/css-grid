@@ -131,21 +131,17 @@
 		}
 	};
 
-	// Ensure the default layout is always the 'simple' preset
+	// Start with an empty grid on load
 	let currentLayout: keyof typeof presetLayouts = 'simple';
-	let gridItems: GridItem[] = presetLayouts.simple.items.map((item) => ({
-		...item,
-		columnSpan: 1,
-		rowSpan: 1
-	}));
-	let nextId = gridItems.length + 1;
+	let gridItems: GridItem[] = [];
+	let nextId = 1;
 
 	// Grid Container Properties
 	let gridProperties = {
 		// Template Properties
 		gridTemplateColumns: '1fr 2fr 1fr',
 		gridTemplateRows: 'auto',
-		gridTemplateAreas: presetLayouts.simple.areas.trim(),
+		gridTemplateAreas: '',
 
 		// Gap Properties
 		columnGap: '1rem',
@@ -164,6 +160,7 @@
 		alignItems: 'stretch',
 		placeItems: 'stretch'
 	};
+	let pendingGridTemplateAreas = '';
 
 	// Property Options
 	const propertyOptions = {
@@ -229,9 +226,6 @@
 	let draggedItem: GridItem | null = null;
 	let draggedOverItem: GridItem | null = null;
 	let dropPreviewElement: HTMLElement | null = null;
-
-	// Add a local variable to bind the textarea value before applying
-	let pendingGridTemplateAreas = gridProperties.gridTemplateAreas;
 
 	function updateColumns() {
 		if (columnCount > 0) {
@@ -363,6 +357,12 @@
 	// Add delete function
 	function deleteGridItem(idToDelete: number) {
 		gridItems = gridItems.filter((item) => item.id !== idToDelete);
+	}
+
+	function clearAll() {
+		gridItems = [];
+		gridProperties.gridTemplateAreas = '';
+		updatePreviewStyles();
 	}
 
 	$: {
@@ -502,6 +502,16 @@
 <div class="container" bind:this={container}>
 	{#if mounted}
 		<div class="left-panel">
+			<div class="sidebar-actions">
+				<button class="action-btn add-btn" on:click={addGridItem} title="Add a new grid item"
+					>Add Grid Item</button
+				>
+				<button
+					class="action-btn clear-btn"
+					on:click={clearAll}
+					title="Clear all grid items and template">Clear All</button
+				>
+			</div>
 			<div class="toolbox">
 				<h2>Grid Properties Toolbox</h2>
 
@@ -691,8 +701,6 @@
 						</svg>
 					</div>
 				</section>
-
-				<button on:click={addGridItem}>Add Grid Item</button>
 			</div>
 		</div>
 
@@ -1105,5 +1113,35 @@
 
 	.grid-item:hover .resize-handle::after {
 		opacity: 1;
+	}
+
+	.sidebar-actions {
+		display: flex;
+		gap: 0.5rem;
+		justify-content: center;
+		margin-bottom: 1rem;
+	}
+	.action-btn {
+		padding: 0.25rem 0.75rem;
+		font-size: 0.85rem;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: background 0.2s;
+		min-width: 110px;
+	}
+	.add-btn {
+		background: #4caf50;
+		color: white;
+	}
+	.add-btn:hover {
+		background: #388e3c;
+	}
+	.clear-btn {
+		background: #f44336;
+		color: white;
+	}
+	.clear-btn:hover {
+		background: #d32f2f;
 	}
 </style>
